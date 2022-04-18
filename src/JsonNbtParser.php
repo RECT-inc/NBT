@@ -177,6 +177,8 @@ class JsonNbtParser{
 			if($inQuotes){ //anything is allowed inside quotes, except unescaped quotes
 				if($c === '"'){
 					$inQuotes = false;
+					$part = substr($value, 0, -1);
+					if(is_numeric($part)) return;
 					$retval = new StringTag($value);
 					$foundEnd = true;
 				}elseif($c === "\\"){
