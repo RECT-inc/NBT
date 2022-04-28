@@ -180,7 +180,7 @@ class CustomJsonNbtParser{
 				if($c === '"'){
 					$inQuotes = false;
 					if(!str_starts_with($value,"number(")) {
-						if ($value == "__videCoumpoundTag__"){
+						if ($value == "__EmptyCompoundTag__"){
 							$retval = CompoundTag::create();
 						}else{
 							$retval = new StringTag($value);
