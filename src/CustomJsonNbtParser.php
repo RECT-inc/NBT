@@ -250,8 +250,8 @@ class CustomJsonNbtParser{
 
 		$value = str_replace(['number(',')'],"",$value);
 
-		$last = strtolower(substr($value, -1));
-		$part = substr($value, 0, -1);
+		$last = mb_strtolower(mb_substr($value, -1));
+		$part = mb_substr($value, 0, -1);
 
 		if($last !== "b" and $last !== "s" and $last !== "l" and $last !== "f" and $last !== "d"){
 			$part = $value;
