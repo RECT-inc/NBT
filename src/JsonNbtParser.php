@@ -56,6 +56,8 @@ class JsonNbtParser{
 				throw new NbtDataException("Syntax error: expected compound start but got '$b'");
 			}
 			$ret = self::parseCompound($stream); //don't return directly, syntax needs to be validated
+		}catch(NbtDataException $e){
+			throw new NbtDataException($e->getMessage() . " at offset " . $stream->getOffset());
 		}catch(BinaryDataException $e){
 			throw new NbtDataException("Syntax error: " . $e->getMessage() . " at offset " . $stream->getOffset());
 		}
@@ -75,7 +77,16 @@ class JsonNbtParser{
 
 		if(self::skipWhitespace($stream, "]")){
 			while(!$stream->feof()){
-				$retval->push(self::readValue($stream));
+				try{
+					$value = self::readValue($stream);
+				}catch(InvalidTagValueException $e){
+					throw new NbtDataException("Data error: " . $e->getMessage());
+				}
+				$expectedType = $retval->getTagType();
+				if($expectedType !== NBT::TAG_End && $expectedType !== $value->getType()){
+					throw new NbtDataException("Data error: lists can only contain one type of value");
+				}
+				$retval->push($value);
 				if(self::readBreak($stream, "]")){
 					return $retval;
 				}
@@ -100,7 +111,11 @@ class JsonNbtParser{
 				if($retval->getTag($k) !== null){
 					throw new NbtDataException("Syntax error: duplicate compound leaf node '$k'");
 				}
-				$retval->setTag($k, self::readValue($stream));
+				try{
+					$retval->setTag($k, self::readValue($stream));
+				}catch(InvalidTagValueException $e){
+					throw new NbtDataException("Data error: " . $e->getMessage());
+				}
 
 				if(self::readBreak($stream, "}")){
 					return $retval;
@@ -158,6 +173,7 @@ class JsonNbtParser{
 	/**
 	 * @throws BinaryDataException
 	 * @throws NbtDataException
+	 * @throws InvalidTagValueException
 	 */
 	private static function readValue(BinaryStream $stream) : Tag{
 		$value = "";
